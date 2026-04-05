@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 
-// Importando o seu tema e a sua tela inicial
 import 'screens/core/theme/app_theme.dart';
 import 'screens/inicio.dart'; 
+import 'screens/sobre.dart';
+import 'screens/cardapio.dart';
+import 'screens/contato.dart';
+import 'screens/meus_pedidos.dart';
+import 'screens/checkout.dart';
+import 'screens/registro.dart';
+import 'screens/login.dart';
+import 'screens/admin_screen.dart';
 
 void main() {
-  // Atualizamos o nome da classe que inicia o app
   runApp(const RanchoParacatuApp()); 
 }
 
@@ -15,12 +21,26 @@ class RanchoParacatuApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // Título oficial do projeto atualizado!
       title: 'Rancho Paracatu', 
-      
       debugShowCheckedModeBanner: false,
+      
       theme: AppTheme.temaPadrao, 
-      home: const InicioScreen(), 
+      
+
+      initialRoute: '/', 
+      
+
+      routes: {
+        '/': (context) => const InicioScreen(),
+        '/sobre': (context) => const SobreScreen(),
+        '/cardapio': (context) => const CardapioScreen(),
+        '/contato': (context) => const ContatoScreen(),
+        '/meus_pedidos': (context) => const MeusPedidosScreen(),
+        '/checkout': (context) => const CheckoutScreen(),
+        '/registro': (context) => const RegistroScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/admin': (context) => const AdminScreen(),
+      },
     );
   }
 }
