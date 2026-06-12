@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class CardapioService {
-  // O seu link RAW do GitHub Gist configurado para funcionar como API
   final String apiUrl = 'https://gist.githubusercontent.com/EduardoTomazini/7e9cce505a662e3998bd5ff283452c37/raw';
 
   Future<List<Map<String, dynamic>>> fetchProdutos() async {

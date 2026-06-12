@@ -1,6 +1,10 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'core/theme/app_colors.dart';
 import '../widgets/custom_drawer.dart';
+import '../providers/carrinho_provider.dart';
+import '../models/cart_item.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -10,7 +14,6 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
-  
   final Color corTitulo = const Color(0xFF2E2414);
   final Color corSubtitulo = const Color(0xFF4D3820);
   final Color corBorda = const Color(0xFFD6C9B8);
@@ -19,67 +22,34 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final Color corBordaInput = const Color(0xFFCBBFAA);
   final Color corBotaoEnviar = const Color(0xFF4D3820);
 
-  
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _mesaController = TextEditingController();
   final TextEditingController _mensagemController = TextEditingController();
 
-  
   bool _sending = false;
 
-  
-  List<Map<String, dynamic>> _itens = [
-    {'name': 'Feijoada Completa', 'price': 65.90, 'qty': 1},
-    {'name': 'Suco de Laranja', 'price': 12.00, 'qty': 2},
-  ];
-
-  
-  double get _total => _itens.fold(0, (soma, item) => soma + (item['price'] * item['qty']));
-
-  
-  void _aumentar(Map<String, dynamic> item) {
-    setState(() => item['qty']++);
-  }
-
-  void _diminuir(Map<String, dynamic> item) {
-    if (item['qty'] > 1) {
-      setState(() => item['qty']--);
-    }
-  }
-
-  void _remover(Map<String, dynamic> item) {
-    setState(() => _itens.remove(item));
-  }
-
-  void _limparCarrinho() {
-    setState(() => _itens.clear());
-  }
-
-  
-  void _enviarPedido() async {
-    
+  void _enviarPedido(CarrinhoProvider carrinho) async {
     FocusScope.of(context).unfocus();
-
     setState(() => _sending = true);
 
-    
+    // Simulando tempo de requisição de rede para envio do pedido (Cumpre RF009)
     await Future.delayed(const Duration(seconds: 2));
-
     setState(() => _sending = false);
 
-    
     String mesaDigitada = _mesaController.text.isNotEmpty ? _mesaController.text : 'Não informada';
-
     
-    _limparCarrinho();
+    // Gerador de número de pedido dinâmico (não é mais fixo)
+    String numeroPedido = 'PED-${Random().nextInt(9000) + 1000}';
 
-    
+    // Limpa o carrinho global após o envio
+    carrinho.limparCarrinho();
+
     if (mounted) {
-      _mostrarModalConfirmacao(mesaDigitada);
+      _mostrarModalConfirmacao(mesaDigitada, numeroPedido);
     }
   }
 
-  void _mostrarModalConfirmacao(String mesa) {
+  void _mostrarModalConfirmacao(String mesa, String numeroPedido) {
     showDialog(
       context: context,
       barrierDismissible: false, 
@@ -100,7 +70,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 const SizedBox(height: 20),
                 Text('Número do Pedido:', style: TextStyle(fontSize: 18, color: corSubtitulo)),
                 const SizedBox(height: 4),
-                Text('PED-8945', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: corTitulo)),
+                Text(numeroPedido, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: corTitulo)),
                 const SizedBox(height: 12),
                 Text('Mesa: $mesa', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: corSubtitulo)),
                 const SizedBox(height: 32),
@@ -136,135 +106,136 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ),
       drawer: const CustomDrawer(),
       
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: corBorda),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5)),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Título
-              Center(
-                child: Text('Seu Carrinho', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: corTitulo, fontFamily: 'serif')),
-              ),
-              const SizedBox(height: 24),
+      // Consumer injeta o estado do carrinho nesta tela em tempo real
+      body: Consumer<CarrinhoProvider>(
+        builder: (context, carrinho, child) {
+          final itens = carrinho.itens.values.toList();
+          final total = carrinho.valorTotal;
 
-              
-              if (_itens.isEmpty)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: corBorda),
-                  ),
-                  child: const Text(
-                    'Seu carrinho está vazio.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
-                  ),
-                ),
-
-              if (_itens.isNotEmpty)
-                Column(
-                  children: _itens.map((item) => _buildItemCarrinho(item)).toList(),
-                ),
-
-              
-              if (_itens.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 24.0),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      'Total: R\$ ${_total.toStringAsFixed(2).replaceAll('.', ',')}',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: corTitulo),
-                    ),
-                  ),
-                ),
-
-              const SizedBox(height: 48),
-
-              
-              Text('Dados do Pedido', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: corTitulo, fontFamily: 'serif')),
-              const SizedBox(height: 24),
-
-              TextField(
-                controller: _nomeController,
-                decoration: _estiloInput('Nome', 'Ex: João'),
-              ),
-              const SizedBox(height: 16),
-              
-              TextField(
-                controller: _mesaController,
-                keyboardType: TextInputType.number,
-                decoration: _estiloInput('Mesa', 'Ex: 12'),
-              ),
-              const SizedBox(height: 16),
-              
-              TextField(
-                controller: _mensagemController,
-                maxLines: 3,
-                decoration: _estiloInput('Observações', 'Ex: Tirar cebola, bebida sem gelo...'),
-              ),
-
-              const SizedBox(height: 32),
-
-              
-              Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: (_sending || _itens.isEmpty) ? null : _enviarPedido,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: corBotaoEnviar,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: _sending
-                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : const Text('Enviar Pedido', style: TextStyle(fontSize: 16, color: Colors.white)),
-                    ),
-                  ),
-                  
-                  if (_itens.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: _limparCarrinho,
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: corBorda, // bg-[#d6c9b8]
-                          side: BorderSide.none,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: Text('Esvaziar Carrinho', style: TextStyle(fontSize: 16, color: corTitulo, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                  ]
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: corBorda),
+                boxShadow: const [
+                  BoxShadow(color: Color.fromARGB(13, 0, 0, 0), blurRadius: 15, offset: Offset(0, 5)), // Aviso withOpacity corrigido
                 ],
               ),
-            ],
-          ),
-        ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Text('Seu Carrinho', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: corTitulo, fontFamily: 'serif')),
+                  ),
+                  const SizedBox(height: 24),
+
+                  if (itens.isEmpty)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: corBorda),
+                      ),
+                      child: const Text(
+                        'Seu carrinho está vazio.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                    ),
+
+                  if (itens.isNotEmpty)
+                    Column(
+                      children: itens.map((item) => _buildItemCarrinho(item, carrinho)).toList(),
+                    ),
+
+                  if (itens.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 24.0),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          'Total: R\$ ${total.toStringAsFixed(2).replaceAll('.', ',')}',
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: corTitulo),
+                        ),
+                      ),
+                    ),
+
+                  const SizedBox(height: 48),
+
+                  Text('Dados do Pedido', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: corTitulo, fontFamily: 'serif')),
+                  const SizedBox(height: 24),
+
+                  TextField(
+                    controller: _nomeController,
+                    decoration: _estiloInput('Nome', 'Ex: João'),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  TextField(
+                    controller: _mesaController,
+                    keyboardType: TextInputType.number,
+                    decoration: _estiloInput('Mesa', 'Ex: 12'),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  TextField(
+                    controller: _mensagemController,
+                    maxLines: 3,
+                    decoration: _estiloInput('Observações', 'Ex: Tirar cebola, bebida sem gelo...'),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: (_sending || itens.isEmpty) ? null : () => _enviarPedido(carrinho),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: corBotaoEnviar,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: _sending
+                              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                              : const Text('Enviar Pedido', style: TextStyle(fontSize: 16, color: Colors.white)),
+                        ),
+                      ),
+                      
+                      if (itens.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: carrinho.limparCarrinho,
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: corBorda,
+                              side: BorderSide.none,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: Text('Esvaziar Carrinho', style: TextStyle(fontSize: 16, color: corTitulo, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ]
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  
-
-  Widget _buildItemCarrinho(Map<String, dynamic> item) {
+  Widget _buildItemCarrinho(CartItem item, CarrinhoProvider carrinho) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -272,37 +243,34 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: corBorda),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 5, offset: const Offset(0, 2)),
+        boxShadow: const [
+          BoxShadow(color: Color.fromARGB(8, 0, 0, 0), blurRadius: 5, offset: Offset(0, 2)), // Aviso withOpacity corrigido
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item['name'], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: corTitulo)),
+                Text(item.titulo, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: corTitulo)),
                 const SizedBox(height: 4),
-                Text('R\$ ${item['price'].toStringAsFixed(2).replaceAll('.', ',')}', style: TextStyle(fontSize: 14, color: corSubtitulo)),
+                Text('R\$ ${item.preco.toStringAsFixed(2).replaceAll('.', ',')}', style: TextStyle(fontSize: 14, color: corSubtitulo)),
               ],
             ),
           ),
-          
-          
           Row(
             children: [
-              _botaoQtd('-', () => _diminuir(item)),
+              _botaoQtd('-', () => carrinho.decrementarItem(item.id)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: Text('${item['qty']}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: corTitulo)),
+                child: Text('${item.quantidade}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: corTitulo)),
               ),
-              _botaoQtd('+', () => _aumentar(item)),
+              _botaoQtd('+', () => carrinho.adicionarItem(item.id, item.titulo, item.preco)),
               
               IconButton(
-                onPressed: () => _remover(item),
+                onPressed: () => carrinho.removerItem(item.id),
                 icon: const Icon(Icons.delete_outline, color: Colors.red),
                 tooltip: 'Remover',
               ),
