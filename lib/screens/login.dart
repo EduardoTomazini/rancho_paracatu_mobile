@@ -70,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
       });
       
       // Redireciona o cliente com sucesso diretamente para a tela principal (Cardápio)
-      Navigator.pushReplacementNamed(context, '/cardapio');
+      Navigator.pushReplacementNamed(context, '/admin');
     }
   }
 

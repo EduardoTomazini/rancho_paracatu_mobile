@@ -10,25 +10,22 @@ class RegistroScreen extends StatefulWidget {
 }
 
 class _RegistroScreenState extends State<RegistroScreen> {
-  
   final Color corTexto = const Color(0xFF2E2414);
   final Color corBorda = const Color(0xFFC4B69C);
   final Color corFoco = const Color(0xFF6B4F28);
   final Color corBotao = const Color(0xFF6B4F28);
 
- 
   final TextEditingController _nomeController = TextEditingController();
+  final TextEditingController _telefoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
+  final TextEditingController _confirmaSenhaController = TextEditingController();
 
- 
   bool _isLoading = false;
   bool _ok = false;
   String? _error;
 
-  
   void _submit() async {
-    // Esconde o teclado
     FocusScope.of(context).unfocus();
 
     setState(() {
@@ -36,10 +33,41 @@ class _RegistroScreenState extends State<RegistroScreen> {
       _ok = false;
     });
 
-    
-    if (_nomeController.text.isEmpty || _emailController.text.isEmpty || _senhaController.text.length < 6) {
+    final nome = _nomeController.text.trim();
+    final telefone = _telefoneController.text.trim();
+    final email = _emailController.text.trim();
+    final senha = _senhaController.text.trim();
+    final confirmaSenha = _confirmaSenhaController.text.trim();
+
+    // 1. Validação de campos vazios
+    if (nome.isEmpty || telefone.isEmpty || email.isEmpty || senha.isEmpty || confirmaSenha.isEmpty) {
       setState(() {
-        _error = 'Preencha todos os campos corretamente.';
+        _error = 'Por favor, preencha todos os campos.';
+      });
+      return;
+    }
+
+    // 2. Validação de formato de e-mail (Regex)
+    final emailRegex = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+    if (!emailRegex.hasMatch(email)) {
+      setState(() {
+        _error = 'O formato do e-mail é inválido.';
+      });
+      return;
+    }
+
+    // 3. Validação de tamanho de senha
+    if (senha.length < 6) {
+      setState(() {
+        _error = 'A senha deve ter pelo menos 6 caracteres.';
+      });
+      return;
+    }
+
+    // 4. Validação de igualdade das senhas
+    if (senha != confirmaSenha) {
+      setState(() {
+        _error = 'As senhas não coincidem. Verifique e tente novamente.';
       });
       return;
     }
@@ -48,7 +76,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
       _isLoading = true;
     });
 
-    
+    // Simula o tempo de rede para criação da conta
     await Future.delayed(const Duration(seconds: 2));
 
     if (mounted) {
@@ -57,11 +85,10 @@ class _RegistroScreenState extends State<RegistroScreen> {
         _ok = true;
       });
 
-      
+      // Redireciona para o login após o sucesso do cadastro
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
-          
-          Navigator.pushReplacementNamed(context, '/'); 
+          Navigator.pushReplacementNamed(context, '/login'); 
         }
       });
     }
@@ -75,7 +102,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
         title: const Text('Rancho Paracatu'),
       ),
       drawer: const CustomDrawer(),
-      
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -84,13 +110,13 @@ class _RegistroScreenState extends State<RegistroScreen> {
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16), // rounded-xl
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFFE6DCC7)),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Color.fromARGB(26, 0, 0, 0), // Warning withOpacity resolvido
                   blurRadius: 15,
-                  offset: const Offset(0, 5), // shadow-lg
+                  offset: Offset(0, 5),
                 ),
               ],
             ),
@@ -98,7 +124,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Título
                 Center(
                   child: Text(
                     'Criar Conta',
@@ -107,54 +132,71 @@ class _RegistroScreenState extends State<RegistroScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                
-                Text('Nome', style: TextStyle(fontSize: 14, color: corTexto)),
+                Text('Nome Completo', style: TextStyle(fontSize: 14, color: corTexto)),
                 const SizedBox(height: 4),
                 TextField(
                   controller: _nomeController,
-                  decoration: _estiloInput('Seu nome completo'),
+                  decoration: _estiloInput('Ex: João Silva'),
+                  textCapitalization: TextCapitalization.words,
                 ),
                 const SizedBox(height: 16),
 
-               
-                Text('Email', style: TextStyle(fontSize: 14, color: corTexto)),
+                Text('Telefone', style: TextStyle(fontSize: 14, color: corTexto)),
+                const SizedBox(height: 4),
+                TextField(
+                  controller: _telefoneController,
+                  keyboardType: TextInputType.phone,
+                  decoration: _estiloInput('(00) 00000-0000'),
+                ),
+                const SizedBox(height: 16),
+
+                Text('E-mail', style: TextStyle(fontSize: 14, color: corTexto)),
                 const SizedBox(height: 4),
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: _estiloInput('exemplo@email.com'),
+                  decoration: _estiloInput('exemplo@dominio.com'),
                 ),
                 const SizedBox(height: 16),
 
-                
                 Text('Senha', style: TextStyle(fontSize: 14, color: corTexto)),
                 const SizedBox(height: 4),
                 TextField(
                   controller: _senhaController,
-                  obscureText: true, // Transforma em bolinhas
+                  obscureText: true, 
                   decoration: _estiloInput('Mínimo 6 caracteres'),
+                ),
+                const SizedBox(height: 16),
+
+                Text('Confirmar Senha', style: TextStyle(fontSize: 14, color: corTexto)),
+                const SizedBox(height: 4),
+                TextField(
+                  controller: _confirmaSenhaController,
+                  obscureText: true, 
+                  decoration: _estiloInput('Repita a sua senha'),
                 ),
                 const SizedBox(height: 24),
 
-                
                 if (_error != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12.0),
-                    child: Text(_error!, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                    child: Center(
+                      child: Text(_error!, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                    ),
                   ),
 
-                
                 if (_ok)
                   const Padding(
                     padding: EdgeInsets.only(bottom: 12.0),
-                    child: Text('Conta criada com sucesso! Redirecionando...', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                    child: Center(
+                      child: Text('Conta criada com sucesso!\nRedirecionando...', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                    ),
                   ),
 
-                
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _submit,
+                    onPressed: _isLoading || _ok ? null : _submit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: corBotao,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -168,7 +210,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
                 const SizedBox(height: 16),
 
-                
                 Center(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -194,7 +235,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
     );
   }
 
- 
   InputDecoration _estiloInput(String hint) {
     return InputDecoration(
       hintText: hint,
