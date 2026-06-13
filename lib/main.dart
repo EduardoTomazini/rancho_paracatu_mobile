@@ -10,6 +10,7 @@ import 'screens/checkout.dart';
 import 'screens/login.dart';
 import 'screens/registro.dart';
 import 'screens/sobre.dart';
+import 'screens/esqueceu_senha.dart';
 import 'screens/contato.dart';
 import 'screens/admin_screen.dart';
 import 'screens/admin_pedidos.dart';
@@ -56,6 +57,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/registro': (context) => const RegistroScreen(),
         '/sobre': (context) => const SobreScreen(),
+        '/esqueceu_senha': (context) => const EsqueceuSenhaScreen(),
         '/contato': (context) => const ContatoScreen(),
         '/admin': (context) => const AdminScreen(),
         '/admin/pedidos': (context) => const AdminPedidosScreen(),

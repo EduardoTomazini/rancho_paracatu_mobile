@@ -8,38 +8,75 @@ class AdminPedidosScreen extends StatefulWidget {
 }
 
 class _AdminPedidosScreenState extends State<AdminPedidosScreen> {
-  
   final Color corTitulo = const Color(0xFF4D3820);
   final Color corBorda = const Color(0xFFD6C9B8);
   final Color corFundoTabela = const Color(0xFFFFF8EF);
   final Color corCabecalhoTabela = const Color(0xFFE9DFD0);
 
-  
   String _termoBusca = '';
   String _statusFiltro = '';
-  int _novosPedidos = 2; 
+  int _novosPedidos = 2;
 
-  
-  final List<Map<String, dynamic>> _pedidosMock = [
-    {'id': 142, 'name': 'Valdir Medeiros', 'mesa': 8, 'created_at': '05/04/2026 12:30', 'total': 85.90, 'status': 'novo', 'visto': false},
-    {'id': 141, 'name': 'João Silva', 'mesa': 12, 'created_at': '05/04/2026 12:15', 'total': 120.00, 'status': 'preparando', 'visto': true},
-    {'id': 140, 'name': 'Maria Oliveira', 'mesa': 3, 'created_at': '05/04/2026 11:45', 'total': 45.50, 'status': 'pronto', 'visto': true},
-    {'id': 139, 'name': 'Carlos Eduardo', 'mesa': 1, 'created_at': '05/04/2026 10:30', 'total': 210.00, 'status': 'entregue', 'visto': true},
-    {'id': 138, 'name': 'Ana Paula', 'mesa': 5, 'created_at': '05/04/2026 09:15', 'total': 32.00, 'status': 'cancelado', 'visto': true},
+  // Lista mutável para permitir remoção de pedidos
+  List<Map<String, dynamic>> _pedidosMock = [
+    {
+      'id': 142, 'name': 'Valdir Medeiros', 'mesa': 8,
+      'created_at': '05/04/2026 12:30', 'total': 85.90,
+      'status': 'novo', 'visto': false,
+      'itens': [
+        {'name': 'Feijoada Completa', 'quantidade': 1, 'price': 65.90},
+        {'name': 'Suco de Laranja', 'quantidade': 2, 'price': 10.00},
+      ],
+    },
+    {
+      'id': 141, 'name': 'João Silva', 'mesa': 12,
+      'created_at': '05/04/2026 12:15', 'total': 120.00,
+      'status': 'preparando', 'visto': true,
+      'itens': [
+        {'name': 'Picanha na Brasa', 'quantidade': 1, 'price': 89.90},
+        {'name': 'Refrigerante Lata', 'quantidade': 2, 'price': 8.00},
+        {'name': 'Pão de Alho', 'quantidade': 1, 'price': 14.10},
+      ],
+    },
+    {
+      'id': 140, 'name': 'Maria Oliveira', 'mesa': 3,
+      'created_at': '05/04/2026 11:45', 'total': 45.50,
+      'status': 'pronto', 'visto': true,
+      'itens': [
+        {'name': 'Porção de Fritas', 'quantidade': 2, 'price': 18.00},
+        {'name': 'Água Mineral', 'quantidade': 1, 'price': 5.00},
+        {'name': 'Pudim', 'quantidade': 1, 'price': 4.50},
+      ],
+    },
+    {
+      'id': 139, 'name': 'Carlos Eduardo', 'mesa': 1,
+      'created_at': '05/04/2026 10:30', 'total': 210.00,
+      'status': 'entregue', 'visto': true,
+      'itens': [
+        {'name': 'Churrasco Misto', 'quantidade': 2, 'price': 95.00},
+        {'name': 'Cerveja Long Neck', 'quantidade': 4, 'price': 10.00},
+      ],
+    },
+    {
+      'id': 138, 'name': 'Ana Paula', 'mesa': 5,
+      'created_at': '05/04/2026 09:15', 'total': 32.00,
+      'status': 'cancelado', 'visto': true,
+      'itens': [
+        {'name': 'Salada Caesar', 'quantidade': 1, 'price': 28.00},
+        {'name': 'Suco de Abacaxi', 'quantidade': 1, 'price': 4.00},
+      ],
+    },
   ];
 
-  
   List<Map<String, dynamic>> get _pedidosFiltrados {
     return _pedidosMock.where((p) {
-      final matchBusca = p['name'].toString().toLowerCase().contains(_termoBusca.toLowerCase()) || 
-                         p['id'].toString().contains(_termoBusca) || 
+      final matchBusca = p['name'].toString().toLowerCase().contains(_termoBusca.toLowerCase()) ||
+                         p['id'].toString().contains(_termoBusca) ||
                          p['mesa'].toString().contains(_termoBusca);
       final matchStatus = _statusFiltro.isEmpty || p['status'] == _statusFiltro;
       return matchBusca && matchStatus;
     }).toList();
   }
-
-  
 
   void _atualizar() {
     FocusScope.of(context).unfocus();
@@ -55,7 +92,6 @@ class _AdminPedidosScreenState extends State<AdminPedidosScreen> {
     );
   }
 
-  
   void _abrirModal(Map<String, dynamic> pedido) {
     showDialog(
       context: context,
@@ -70,7 +106,7 @@ class _AdminPedidosScreenState extends State<AdminPedidosScreen> {
               pedido['visto'] = true;
               if (_novosPedidos > 0) _novosPedidos--;
             });
-            Navigator.pop(context); 
+            Navigator.pop(context);
           },
         );
       },
@@ -83,14 +119,12 @@ class _AdminPedidosScreenState extends State<AdminPedidosScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          
           Wrap(
             alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 16,
             runSpacing: 16,
             children: [
-              // Título + Badge
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -105,17 +139,13 @@ class _AdminPedidosScreenState extends State<AdminPedidosScreen> {
                   ]
                 ],
               ),
-
-              
               Wrap(
                 spacing: 12,
                 runSpacing: 12,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  
                   Container(
-                    width: 200,
-                    height: 45,
+                    width: 200, height: 45,
                     decoration: BoxDecoration(color: Colors.white, border: Border.all(color: corBorda), borderRadius: BorderRadius.circular(8)),
                     child: TextField(
                       onChanged: (val) => setState(() => _termoBusca = val),
@@ -127,8 +157,6 @@ class _AdminPedidosScreenState extends State<AdminPedidosScreen> {
                       ),
                     ),
                   ),
-
-                  
                   Container(
                     height: 45,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -149,8 +177,6 @@ class _AdminPedidosScreenState extends State<AdminPedidosScreen> {
                       ),
                     ),
                   ),
-
-                  
                   ElevatedButton(
                     onPressed: _atualizar,
                     style: ElevatedButton.styleFrom(
@@ -166,14 +192,13 @@ class _AdminPedidosScreenState extends State<AdminPedidosScreen> {
           ),
           const SizedBox(height: 24),
 
-          
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
               color: corFundoTabela,
               border: Border.all(color: corBorda),
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
             ),
             clipBehavior: Clip.antiAlias,
             child: SingleChildScrollView(
@@ -192,9 +217,8 @@ class _AdminPedidosScreenState extends State<AdminPedidosScreen> {
                   DataColumn(label: Text('Ações', style: TextStyle(fontWeight: FontWeight.bold))),
                 ],
                 rows: _pedidosFiltrados.map((pedido) {
-                  
                   final bool isVisto = pedido['visto'];
-                  final corTexto = isVisto ? corTitulo.withOpacity(0.7) : corTitulo;
+                  final corTexto = isVisto ? corTitulo.withValues(alpha: 0.7) : corTitulo;
 
                   return DataRow(
                     cells: [
@@ -227,18 +251,17 @@ class _AdminPedidosScreenState extends State<AdminPedidosScreen> {
               ),
             ),
           ),
-          
+
           if (_pedidosFiltrados.isEmpty)
-             const Padding(
-               padding: EdgeInsets.all(32.0),
-               child: Center(child: Text('Nenhum pedido encontrado.', style: TextStyle(color: Colors.grey, fontSize: 16))),
-             ),
+            const Padding(
+              padding: EdgeInsets.all(32.0),
+              child: Center(child: Text('Nenhum pedido encontrado.', style: TextStyle(color: Colors.grey, fontSize: 16))),
+            ),
         ],
       ),
     );
   }
 
-  
   Widget _badgeStatus(String status) {
     Color bg; Color text;
     switch (status) {
@@ -271,22 +294,11 @@ class _ModalPedido extends StatefulWidget {
 
 class _ModalPedidoState extends State<_ModalPedido> {
   late String _statusLocal;
-  bool _loadingItems = true;
-  
-  
-  final List<Map<String, dynamic>> _itensDoPedido = [
-    {'name': 'Feijoada Completa', 'quantidade': 1, 'price': 65.90},
-    {'name': 'Suco de Laranja', 'quantidade': 2, 'price': 12.00},
-  ];
 
   @override
   void initState() {
     super.initState();
     _statusLocal = widget.pedido['status'];
-    
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) setState(() => _loadingItems = false);
-    });
   }
 
   void _atualizarStatus() {
@@ -298,6 +310,9 @@ class _ModalPedidoState extends State<_ModalPedido> {
 
   @override
   Widget build(BuildContext context) {
+    // Lê os itens diretamente do mapa do pedido passado
+    final List<dynamic> itens = widget.pedido['itens'] ?? [];
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       insetPadding: const EdgeInsets.all(16),
@@ -307,16 +322,14 @@ class _ModalPedidoState extends State<_ModalPedido> {
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min, 
+            mainAxisSize: MainAxisSize.min,
             children: [
-              
               Wrap(
                 alignment: WrapAlignment.spaceBetween,
                 crossAxisAlignment: WrapCrossAlignment.start,
                 spacing: 16,
                 runSpacing: 16,
                 children: [
-                  
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -329,8 +342,6 @@ class _ModalPedidoState extends State<_ModalPedido> {
                       Text('Total: R\$ ${widget.pedido['total'].toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFF6B4F28), fontSize: 16, fontWeight: FontWeight.bold)),
                     ],
                   ),
-
-                  
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -356,8 +367,12 @@ class _ModalPedidoState extends State<_ModalPedido> {
                       ),
                       ElevatedButton(
                         onPressed: _atualizarStatus,
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4D3820), foregroundColor: Colors.white, minimumSize: const Size(0, 40)),
-                        child: const Text('⟳ Atualizar'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4D3820),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(0, 40),
+                        ),
+                        child: const Text('Atualizar'),
                       ),
                     ],
                   ),
@@ -366,18 +381,20 @@ class _ModalPedidoState extends State<_ModalPedido> {
 
               const Divider(height: 32, color: Color(0xFFD6C9B8)),
 
-              
-              const Text('Itens', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF4D3820))),
+              const Text('Itens do Pedido', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF4D3820))),
               const SizedBox(height: 12),
 
-              if (_loadingItems)
-                const Text('Carregando itens...', style: TextStyle(color: Colors.grey)),
-                
-              if (!_loadingItems)
-                ..._itensDoPedido.map((it) => Container(
+              if (itens.isEmpty)
+                const Text('Nenhum item registrado.', style: TextStyle(color: Colors.grey))
+              else
+                ...itens.map((it) => Container(
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: const Color(0xFFFFFADF), border: Border.all(color: const Color(0xFFE2D9C8)), borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFADF),
+                    border: Border.all(color: const Color(0xFFE2D9C8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -385,17 +402,22 @@ class _ModalPedidoState extends State<_ModalPedido> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(it['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                          Text('Qtd: ${it['quantidade']} — R\$ ${it['price'].toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFF6B4F28), fontSize: 13)),
+                          Text(
+                            'Qtd: ${it['quantidade']} — R\$ ${(it['price'] as double).toStringAsFixed(2)} cada',
+                            style: const TextStyle(color: Color(0xFF6B4F28), fontSize: 13),
+                          ),
                         ],
                       ),
-                      Text('R\$ ${(it['quantidade'] * it['price']).toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF4D3820))),
+                      Text(
+                        'R\$ ${(it['quantidade'] * (it['price'] as double)).toStringAsFixed(2)}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF4D3820)),
+                      ),
                     ],
                   ),
                 )),
 
               const SizedBox(height: 24),
 
-              
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [

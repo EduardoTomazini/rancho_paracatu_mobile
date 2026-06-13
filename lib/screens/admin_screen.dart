@@ -150,13 +150,13 @@ class _AdminScreenState extends State<AdminScreen> {
           
           Container(
             padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(border: Border(bottom: BorderSide(color: const Color(0xFF8A6A55).withOpacity(0.4)))),
+            decoration: BoxDecoration(border: Border(bottom: BorderSide(color: const Color(0xFF8A6A55).withValues(alpha: 0.4)))),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Rancho Paracatu', style: TextStyle(color: corSidebarTexto, fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text('Painel Administrativo', style: TextStyle(color: corSidebarTexto.withOpacity(0.8), fontSize: 14)),
+                Text('Painel Administrativo', style: TextStyle(color: corSidebarTexto.withValues(alpha: 0.8), fontSize: 14)),
               ],
             ),
           ),
@@ -244,12 +244,12 @@ class _PlaceholderPage extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE9D8C3)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 5))],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icone, size: 80, color: const Color(0xFF8A6A55).withOpacity(0.5)),
+          Icon(icone, size: 80, color: const Color(0xFF8A6A55).withValues(alpha: 0.5)),
           const SizedBox(height: 16),
           Text(titulo, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF5C3D2E))),
           const SizedBox(height: 8),

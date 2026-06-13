@@ -307,7 +307,7 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
               color: corFundoTabela,
               border: Border.all(color: corBorda),
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
             ),
             clipBehavior: Clip.antiAlias,
             child: SingleChildScrollView(
@@ -420,7 +420,7 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: corBorda),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

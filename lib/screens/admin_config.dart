@@ -246,7 +246,7 @@ class _AdminConfigScreenState extends State<AdminConfigScreen> {
         color: corFundoCard,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: corBorda),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
