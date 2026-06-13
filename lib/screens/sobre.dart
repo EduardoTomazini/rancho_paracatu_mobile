@@ -5,7 +5,6 @@ import '../widgets/custom_drawer.dart';
 class SobreScreen extends StatelessWidget {
   const SobreScreen({super.key});
 
- 
   final Color corTexto = const Color(0xFF4D5A2A);
   final Color corTitulo = const Color(0xFF2E2414);
   final Color corBorda = const Color(0x4D6B4F28); 
@@ -15,15 +14,12 @@ class SobreScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.fundo,
       
-    
       appBar: AppBar(
         title: const Text('Sobre o Rancho'),
       ),
 
-      
       drawer: const CustomDrawer(), 
 
-     
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0), 
         child: Column(
@@ -50,7 +46,6 @@ class SobreScreen extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            
             Text('Nosso Espaço', style: _estiloTitulo()),
             const SizedBox(height: 16),
             _buildParagrafo(
@@ -58,7 +53,6 @@ class SobreScreen extends StatelessWidget {
             
             const SizedBox(height: 40),
 
-            
             Container(
               padding: const EdgeInsets.all(20),
               decoration: _estiloCard(),
@@ -70,7 +64,6 @@ class SobreScreen extends StatelessWidget {
                   _buildParagrafo(
                       'Estamos em um espaço acolhedor na região de São Joaquim — ideal para quem busca boa comida, ambiente confortável e aquele clima rústico típico do Rancho Paracatu.'),
                   const SizedBox(height: 20),
-                  
                   
                   Container(
                     height: 250,
@@ -95,7 +88,6 @@ class SobreScreen extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            
             Container(
               padding: const EdgeInsets.all(20),
               decoration: _estiloCard(),
@@ -104,7 +96,6 @@ class SobreScreen extends StatelessWidget {
                 children: [
                   Text('Informações do Local', style: _estiloTitulo()),
                   const SizedBox(height: 24),
-                  
                   
                   Wrap(
                     spacing: 20, 
@@ -127,7 +118,27 @@ class SobreScreen extends StatelessWidget {
             
             const SizedBox(height: 40),
 
-         
+            // NOVO BLOCO: RF004 - Informações Institucionais
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: _estiloCard(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Projeto Acadêmico', style: _estiloTitulo()),
+                  const SizedBox(height: 16),
+                  _buildParagrafo('Este aplicativo foi desenvolvido como parte dos requisitos de avaliação da disciplina.'),
+                  const SizedBox(height: 16),
+                  _buildProjetoInfo('Disciplina', 'Prática Extensionista VIII'),
+                  _buildProjetoInfo('Desenvolvedores', 'Eduardo Gondim Tomazini, Felipy Rodrigues Fuga'),
+                  _buildProjetoInfo('Professor(a)', 'Dr. Rodrigo De Oliveira Plotze'),
+                  _buildProjetoInfo('Versão', '1.0.0'),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 40),
+
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -148,8 +159,6 @@ class SobreScreen extends StatelessWidget {
       ),
     );
   }
-
-  
 
   Widget _buildParagrafo(String texto) {
     return Text(
@@ -182,6 +191,21 @@ class SobreScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildProjetoInfo(String label, String valor) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: RichText(
+        text: TextSpan(
+          style: TextStyle(fontSize: 16, color: corTexto, height: 1.5),
+          children: [
+            TextSpan(text: '$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+            TextSpan(text: valor),
+          ],
+        ),
+      ),
+    );
+  }
+
   TextStyle _estiloTitulo() {
     return TextStyle(
       fontSize: 28,
@@ -195,11 +219,11 @@ class SobreScreen extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(12),
       border: Border.all(color: corBorda),
-      boxShadow: [
+      boxShadow: const [
         BoxShadow(
-          color: Colors.black.withOpacity(0.05),
+          color: Color.fromARGB(13, 0, 0, 0), // Aviso withOpacity corrigido
           blurRadius: 10,
-          offset: const Offset(0, 4),
+          offset: Offset(0, 4),
         ),
       ],
     );
