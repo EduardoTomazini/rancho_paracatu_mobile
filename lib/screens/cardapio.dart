@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme/app_colors.dart';
 import '../widgets/custom_drawer.dart';
 import '../providers/carrinho_provider.dart';
-import '../services/cardapio_service.dart';
 
 class CardapioScreen extends StatefulWidget {
   const CardapioScreen({super.key});
@@ -16,17 +16,19 @@ class _CardapioScreenState extends State<CardapioScreen> {
   final Color corTitulo = const Color(0xFF2E2414);
   final Color corFiltro = const Color(0xFF6B4F28);
 
-  // As categorias atualizadas para bater com a sua API
   final List<String> categorias = ['Todos', 'Porções', 'Bebidas', 'Drinks'];
   String categoriaAtiva = 'Todos';
 
-  late Future<List<Map<String, dynamic>>> _produtosFuture;
+  // Instância do cliente Supabase para ler os dados reais
+  final _supabase = Supabase.instance.client;
 
-  @override
-  void initState() {
-    super.initState();
-    // Puxa os dados da sua API real no GitHub
-    _produtosFuture = CardapioService().fetchProdutos();
+  // Função para buscar os produtos direto do Supabase em tempo real
+  Future<List<Map<String, dynamic>>> _fetchProdutos() async {
+    final response = await _supabase
+        .from('produtos')
+        .select()
+        .order('nome', ascending: true);
+    return List<Map<String, dynamic>>.from(response);
   }
 
   @override
@@ -48,6 +50,8 @@ class _CardapioScreenState extends State<CardapioScreen> {
               style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: corTitulo),
             ),
             const SizedBox(height: 24),
+            
+            // Barra Horizontal de Filtros por Categoria
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -69,23 +73,36 @@ class _CardapioScreenState extends State<CardapioScreen> {
               ),
             ),
             const SizedBox(height: 24),
+            
+            // Grid de Exibição dos Produtos Consumindo do Supabase
             Expanded(
               child: FutureBuilder<List<Map<String, dynamic>>>(
-                future: _produtosFuture,
+                future: _fetchProdutos(),
                 builder: (context, snapshot) {
-                  // Mostra o loading enquanto baixa da API
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     return Center(child: Text('Erro ao carregar o cardápio: ${snapshot.error}'));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('Nenhum produto encontrado.'));
+                    return const Center(
+                      child: Text(
+                        'Nenhum produto cadastrado.\nVá até a área admin para adicionar!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                    );
                   }
 
                   final todosProdutos = snapshot.data!;
+                  
+                  // Aplica o filtro selecionado na barra superior
                   final produtosFiltrados = categoriaAtiva == 'Todos'
                       ? todosProdutos
                       : todosProdutos.where((p) => p['cat'] == categoriaAtiva).toList();
+
+                  if (produtosFiltrados.isEmpty) {
+                    return const Center(child: Text('Nenhum item nesta categoria.'));
+                  }
 
                   return GridView.builder(
                     gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -97,12 +114,15 @@ class _CardapioScreenState extends State<CardapioScreen> {
                     itemCount: produtosFiltrados.length,
                     itemBuilder: (context, index) {
                       final p = produtosFiltrados[index];
+                      final double precoDinamico = (p['preco'] as num).toDouble();
+
                       return Card(
                         elevation: 4,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
+                            // Imagem Puxada Diretamente da URL Pública do Storage do Supabase
                             Expanded(
                               child: ClipRRect(
                                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
@@ -121,24 +141,23 @@ class _CardapioScreenState extends State<CardapioScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(p['nome'], style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                  Text(p['nome'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                                   const SizedBox(height: 4),
-                                  Text(p['desc'], style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                  Text(p['desc'] ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
                                   const SizedBox(height: 8),
-                                  Text('R\$ ${p['preco'].toStringAsFixed(2).replaceAll('.', ',')}', style: TextStyle(color: corFiltro, fontWeight: FontWeight.bold)),
+                                  Text('R\$ ${precoDinamico.toStringAsFixed(2).replaceAll('.', ',')}', style: TextStyle(color: corFiltro, fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 8),
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton.icon(
                                       onPressed: () {
-                                        // Envia o item para o Provider Global do Carrinho
+                                        // Adiciona o item real ao estado global do carrinho
                                         Provider.of<CarrinhoProvider>(context, listen: false).adicionarItem(
                                           p['id'].toString(),
-                                          p['nome'],
-                                          (p['preco'] as num).toDouble(),
+                                          p['nome'] ?? '',
+                                          precoDinamico,
                                         );
                                         
-                                        // Feedback visual
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(
                                             content: Text('${p['nome']} adicionado ao pedido!'),
