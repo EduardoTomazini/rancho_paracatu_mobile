@@ -10,33 +10,49 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  
   final Color corTitulo = const Color(0xFF2E2414);
   final Color corFundoInput = const Color(0xFFFFF8EF);
   final Color corBordaFoco = const Color(0xFF6B4F28);
   final Color corBordaCard = const Color(0xFFE7DFD3);
   final Color corBotao = const Color(0xFF4D3820);
 
-  
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
 
-  
   bool _isLoading = false;
   String? _error;
 
-  
   void _submit() async {
-    
     FocusScope.of(context).unfocus();
 
     setState(() {
       _error = null;
     });
 
-    if (_emailController.text.isEmpty || _senhaController.text.isEmpty) {
+    final email = _emailController.text.trim();
+    final senha = _senhaController.text.trim();
+
+    // 1. Validação de campos vazios
+    if (email.isEmpty || senha.isEmpty) {
       setState(() {
-        _error = 'Por favor, preencha email e senha.';
+        _error = 'Por favor, preencha o e-mail e a senha.';
+      });
+      return;
+    }
+
+    // 2. Validação rigorosa de formato de e-mail (Regex)
+    final emailRegex = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+    if (!emailRegex.hasMatch(email)) {
+      setState(() {
+        _error = 'O formato do e-mail é inválido. Tente novamente.';
+      });
+      return;
+    }
+
+    // 3. Validação das credenciais padrão obrigatórias do Rancho Paracatu
+    if (email != 'admin@paracatu.com' || senha != 'adminparacatu') {
+      setState(() {
+        _error = 'E-mail ou senha incorretos.';
       });
       return;
     }
@@ -45,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
 
-    
+    // Simulação do tempo de resposta da autenticação
     await Future.delayed(const Duration(seconds: 2));
 
     if (mounted) {
@@ -53,8 +69,8 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = false;
       });
       
-      
-      Navigator.pushReplacementNamed(context, '/admin');
+      // Redireciona o cliente com sucesso diretamente para a tela principal (Cardápio)
+      Navigator.pushReplacementNamed(context, '/cardapio');
     }
   }
 
@@ -66,22 +82,21 @@ class _LoginScreenState extends State<LoginScreen> {
         title: const Text('Rancho Paracatu'),
       ),
       drawer: const CustomDrawer(),
-      
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 400), // max-w-md
+            constraints: const BoxConstraints(maxWidth: 400),
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16), // rounded-xl
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: corBordaCard),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Color.fromARGB(13, 0, 0, 0),
                   blurRadius: 15,
-                  offset: const Offset(0, 5), // shadow-lg
+                  offset: Offset(0, 5), 
                 ),
               ],
             ),
@@ -89,7 +104,6 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                
                 Center(
                   child: Text(
                     'Entrar',
@@ -98,8 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                
-                Text('Email', style: TextStyle(fontSize: 14, color: corTitulo)),
+                Text('E-mail', style: TextStyle(fontSize: 14, color: corTitulo)),
                 const SizedBox(height: 4),
                 TextField(
                   controller: _emailController,
@@ -108,7 +121,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                
                 Text('Senha', style: TextStyle(fontSize: 14, color: corTitulo)),
                 const SizedBox(height: 4),
                 TextField(
@@ -118,16 +130,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                
                 if (_error != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16.0),
                     child: Center(
-                      child: Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 14, fontWeight: FontWeight.bold)),
+                      child: Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 14, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
                     ),
                   ),
 
-                
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -143,9 +153,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
-                
+                Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/esqueceu_senha');
+                    },
+                    child: Text(
+                      'Esqueceu a senha?',
+                      style: TextStyle(fontSize: 14, color: corBotao, decoration: TextDecoration.underline),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
                 Center(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -171,7 +194,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  
   InputDecoration _estiloInput(String hint) {
     return InputDecoration(
       hintText: hint,
