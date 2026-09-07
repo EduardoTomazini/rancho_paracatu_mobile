@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'config/app_config.dart';
 // Importações padrão do seu tema e telas existentes
 import 'screens/core/theme/app_theme.dart';
 import 'screens/inicio.dart';
@@ -24,11 +25,14 @@ void main() async {
   // Garante que o Flutter inicialize os serviços antes de rodar o app
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Conecta o projeto com a sua infraestrutura do Supabase
-  await Supabase.initialize(
-    url: 'https://tbckcftttuqzhxgkbxps.supabase.co',
-    anonKey: 'sb_publishable_cOzn1r7nZzNhxKUo8G-G8w_7Kkn3Nol',
-  );
+  // O prototipo so inicializa o servico quando a configuracao e fornecida
+  // externamente. Nenhum identificador de infraestrutura fica no repositorio.
+  if (AppConfig.hasSupabaseConfiguration) {
+    await Supabase.initialize(
+      url: AppConfig.supabaseUrl,
+      publishableKey: AppConfig.supabasePublishableKey,
+    );
+  }
 
   runApp(
     MultiProvider(

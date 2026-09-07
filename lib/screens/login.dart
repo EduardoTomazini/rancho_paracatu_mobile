@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/app_config.dart';
 import 'core/theme/app_colors.dart';
 import '../widgets/custom_drawer.dart';
 
@@ -49,8 +50,16 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // 3. Validação das credenciais padrão obrigatórias do Rancho Paracatu
-    if (email != 'admin@paracatu.com' || senha != 'adminparacatu') {
+    // O acesso legado fica desativado quando nenhuma configuracao externa e
+    // fornecida. A versao de producao usara autenticacao no backend.
+    if (!AppConfig.hasLegacyAdminCredentials) {
+      setState(() {
+        _error = 'Acesso administrativo não configurado.';
+      });
+      return;
+    }
+
+    if (email != AppConfig.legacyAdminEmail || senha != AppConfig.legacyAdminPassword) {
       setState(() {
         _error = 'E-mail ou senha incorretos.';
       });
